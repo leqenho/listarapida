@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu PWA Simples</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff;
+      color: #333;
+    }
+    .offline {
+      background-color: #333;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <h1>Meu PWA Simples</h1>
+
+  <!-- Notificação para download -->
+  <button id="installBtn" style="display: none;">Instalar App</button>
+
+  <script>
+    // Service Worker - Detecção de atualizações
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').then(function(registration) {
+          console.log('ServiceWorker registrado com sucesso:', registration);
+        }, function(err) {
+          console.error('Falha ao registrar o ServiceWorker:', err);
+        });
+
+        // Atualização do Service Worker
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+          if (confirm('Uma nova versão está disponível. Deseja atualizar?')) {
+            window.location.reload();
+          }
+        });
+      });
+    }
+
+    // Status de rede
+    window.addEventListener('offline', function() {
+      document.body.classList.add('offline');
+    });
+
+    window.addEventListener('online', function() {
+      document.body.classList.remove('offline');
+    });
+
+    // Notificação para download
+    window.addEventListener('beforeinstallprompt', function(e) {
+      // Impedir que o navegador mostre a solicitação padrão de instalação
+      e.preventDefault();
+
+      // Exibir botão personalizado de instalação
+      var installBtn = document.getElementById('installBtn');
+      installBtn.style.display = 'block';
+
+      installBtn.addEventListener('click', function() {
+        e.prompt();
+        e.userChoice.then(function(choiceResult) {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('Usuário aceitou a instalação');
+          } else {
+            console.log('Usuário rejeitou a instalação');
+          }
+          installBtn.style.display = 'none';
+        });
+      });
+    });
+  </script>
+  <script src="/sw.js">
+     
+  </script>
+  
+</body>
+</html>
